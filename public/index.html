@@ -3,23 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verdad o Reto - Multiplayer Online</title>
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <title>Verdad o Reto - Online</title>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap');
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         :root {
             --primary: #6c5ce7;
             --secondary: #a29bfe;
             --accent: #fd79a8;
             --dark: #2d3436;
-            --light: #dfe6e9;
             --success: #00b894;
             --warning: #fdcb6e;
             --danger: #e74c3c;
@@ -30,34 +27,27 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             overflow-x: hidden;
-            position: relative;
         }
 
         .bg-animation {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; overflow: hidden;
         }
 
         .bg-animation span {
             position: absolute;
-            display: block;
-            width: 20px;
-            height: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            animation: float 25s infinite linear;
+            width: 20px; height: 20px;
+            background: rgba(255,255,255,0.1);
             border-radius: 50%;
+            animation: float 25s infinite linear;
         }
 
-        .bg-animation span:nth-child(1) { left: 10%; animation-delay: 0s; width: 80px; height: 80px; }
-        .bg-animation span:nth-child(2) { left: 20%; animation-delay: 2s; animation-duration: 12s; width: 40px; height: 40px; }
+        .bg-animation span:nth-child(1) { left: 10%; width: 80px; height: 80px; }
+        .bg-animation span:nth-child(2) { left: 20%; animation-delay: 2s; width: 40px; height: 40px; }
         .bg-animation span:nth-child(3) { left: 35%; animation-delay: 4s; width: 60px; height: 60px; }
-        .bg-animation span:nth-child(4) { left: 50%; animation-delay: 0s; animation-duration: 18s; width: 100px; height: 100px; }
-        .bg-animation span:nth-child(5) { left: 65%; animation-delay: 0s; width: 30px; height: 30px; }
+        .bg-animation span:nth-child(4) { left: 50%; width: 100px; height: 100px; }
+        .bg-animation span:nth-child(5) { left: 65%; width: 30px; height: 30px; }
         .bg-animation span:nth-child(6) { left: 75%; animation-delay: 3s; width: 110px; height: 110px; }
         .bg-animation span:nth-child(7) { left: 90%; animation-delay: 7s; width: 150px; height: 150px; }
 
@@ -80,15 +70,14 @@
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255,255,255,0.95);
             backdrop-filter: blur(10px);
             border-radius: 30px;
             padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             width: 100%;
             max-width: 700px;
             animation: slideIn 0.6s ease-out;
-            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         @keyframes slideIn {
@@ -97,16 +86,13 @@
         }
 
         h1 {
-            color: var(--primary);
             font-size: 3em;
             text-align: center;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
             font-weight: 900;
             background: linear-gradient(135deg, #6c5ce7, #fd79a8);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .subtitle {
@@ -118,8 +104,7 @@
 
         .connection-status {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 20px; right: 20px;
             padding: 10px 20px;
             border-radius: 20px;
             font-weight: 600;
@@ -131,20 +116,9 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        .status-connected {
-            background: var(--success);
-            color: white;
-        }
-
-        .status-disconnected {
-            background: var(--danger);
-            color: white;
-        }
-
-        .status-connecting {
-            background: var(--warning);
-            color: var(--dark);
-        }
+        .status-connected { background: var(--success); color: white; }
+        .status-disconnected { background: var(--danger); color: white; }
+        .status-connecting { background: var(--warning); color: var(--dark); }
 
         .mode-selection {
             display: grid;
@@ -161,40 +135,22 @@
             cursor: pointer;
             transition: all 0.3s ease;
             text-align: center;
-            position: relative;
-            overflow: hidden;
         }
 
         .mode-btn:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(108, 92, 231, 0.3);
+            box-shadow: 0 10px 30px rgba(108,92,231,0.3);
             border-color: var(--primary);
         }
 
         .mode-btn.active {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            border-color: var(--accent);
         }
 
-        .mode-btn div:first-child {
-            font-size: 3em;
-            margin-bottom: 10px;
-        }
+        .mode-btn div:first-child { font-size: 3em; margin-bottom: 10px; }
 
-        .mode-btn h3 {
-            font-size: 1.3em;
-            margin-bottom: 5px;
-        }
-
-        .mode-btn p {
-            font-size: 0.9em;
-            opacity: 0.8;
-        }
-
-        .input-group {
-            margin-bottom: 25px;
-        }
+        .input-group { margin-bottom: 25px; }
 
         label {
             display: block;
@@ -212,13 +168,12 @@
             font-size: 1.1em;
             font-family: 'Poppins', sans-serif;
             transition: all 0.3s ease;
-            background: white;
         }
 
         input[type="text"]:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 5px rgba(108, 92, 231, 0.1);
+            box-shadow: 0 0 0 5px rgba(108,92,231,0.1);
         }
 
         .btn {
@@ -238,17 +193,12 @@
         .btn-primary {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            box-shadow: 0 10px 30px rgba(108, 92, 231, 0.4);
+            box-shadow: 0 10px 30px rgba(108,92,231,0.4);
         }
 
         .btn-primary:hover:not(:disabled) {
             transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(108, 92, 231, 0.5);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+            box-shadow: 0 15px 40px rgba(108,92,231,0.5);
         }
 
         .btn-secondary {
@@ -257,18 +207,9 @@
             margin-top: 10px;
         }
 
-        .btn-secondary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(253, 121, 168, 0.4);
-        }
+        .hidden { display: none !important; }
 
-        .hidden {
-            display: none !important;
-        }
-
-        .waiting-room {
-            text-align: center;
-        }
+        .waiting-room { text-align: center; }
 
         .room-code-display {
             background: linear-gradient(135deg, #2d3436, #636e72);
@@ -276,24 +217,6 @@
             padding: 30px;
             border-radius: 20px;
             margin: 30px 0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .room-code-display::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-            animation: shine 3s infinite;
-        }
-
-        @keyframes shine {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
         }
 
         .code-label {
@@ -309,9 +232,6 @@
             font-weight: 900;
             letter-spacing: 10px;
             font-family: 'Courier New', monospace;
-            text-shadow: 0 0 20px rgba(255,255,255,0.5);
-            position: relative;
-            z-index: 1;
         }
 
         .copy-btn {
@@ -322,18 +242,10 @@
             border-radius: 10px;
             margin-top: 15px;
             cursor: pointer;
-            transition: all 0.3s;
             font-family: 'Poppins', sans-serif;
         }
 
-        .copy-btn:hover {
-            background: rgba(255,255,255,0.3);
-            transform: scale(1.05);
-        }
-
-        .players-list {
-            margin: 30px 0;
-        }
+        .players-list { margin: 30px 0; }
 
         .player-item {
             display: flex;
@@ -341,21 +253,13 @@
             justify-content: center;
             padding: 15px;
             margin: 10px 0;
-            background: rgba(108, 92, 231, 0.1);
+            background: rgba(108,92,231,0.1);
             border-radius: 15px;
-            border: 2px solid rgba(108, 92, 231, 0.2);
-            animation: popIn 0.5s ease;
-        }
-
-        @keyframes popIn {
-            0% { transform: scale(0); opacity: 0; }
-            80% { transform: scale(1.1); }
-            100% { transform: scale(1); opacity: 1; }
+            border: 2px solid rgba(108,92,231,0.2);
         }
 
         .player-avatar {
-            width: 50px;
-            height: 50px;
+            width: 50px; height: 50px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--primary), var(--accent));
             display: flex;
@@ -365,27 +269,6 @@
             font-weight: bold;
             font-size: 1.5em;
             margin-right: 15px;
-        }
-
-        .player-name {
-            font-weight: 600;
-            font-size: 1.2em;
-            color: var(--dark);
-        }
-
-        .status {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background: var(--success);
-            border-radius: 50%;
-            margin-left: 10px;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
         }
 
         .waiting-text {
@@ -399,21 +282,16 @@
         }
 
         .spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(108, 92, 231, 0.3);
+            width: 20px; height: 20px;
+            border: 3px solid rgba(108,92,231,0.3);
             border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .game-screen {
-            text-align: center;
-        }
+        .game-screen { text-align: center; }
 
         .game-header {
             display: flex;
@@ -421,7 +299,7 @@
             align-items: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid rgba(108, 92, 231, 0.1);
+            border-bottom: 2px solid rgba(108,92,231,0.1);
             flex-wrap: wrap;
             gap: 15px;
         }
@@ -433,29 +311,16 @@
             border-radius: 50px;
             font-weight: 700;
             font-size: 1.1em;
-            box-shadow: 0 5px 20px rgba(108, 92, 231, 0.3);
-            animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
         }
 
         .turn-indicator.my-turn {
             background: linear-gradient(135deg, var(--success), #00a085);
-            animation: pulse-scale 1.5s infinite;
+            animation: pulse 1.5s infinite;
         }
 
-        @keyframes pulse-scale {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 
-        .score-board {
-            display: flex;
-            gap: 20px;
-        }
+        .score-board { display: flex; gap: 20px; }
 
         .score-item {
             background: white;
@@ -465,19 +330,8 @@
             font-weight: 600;
         }
 
-        .score-item.active {
-            border: 3px solid var(--primary);
-            transform: scale(1.1);
-        }
-
-        .score-item span {
-            color: var(--primary);
-            font-size: 1.3em;
-        }
-
         .bottle-container {
             margin: 40px 0;
-            position: relative;
             height: 300px;
             display: flex;
             align-items: center;
@@ -485,42 +339,31 @@
         }
 
         .bottle {
-            width: 80px;
-            height: 200px;
+            width: 80px; height: 200px;
             background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.4));
             border-radius: 40px 40px 10px 10px;
             position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2), inset 0 -20px 20px rgba(108, 92, 231, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             border: 3px solid rgba(255,255,255,0.5);
             cursor: pointer;
             transition: transform 0.3s;
         }
 
-        .bottle:hover:not(.spinning) {
-            transform: scale(1.05);
-        }
+        .bottle:hover { transform: scale(1.05); }
 
         .bottle::before {
             content: '';
             position: absolute;
-            top: -30px;
-            left: 50%;
+            top: -30px; left: 50%;
             transform: translateX(-50%);
-            width: 30px;
-            height: 40px;
+            width: 30px; height: 40px;
             background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.4));
             border-radius: 5px;
-            border: 2px solid rgba(255,255,255,0.5);
         }
 
-        .bottle.spinning {
-            animation: spinBottle 3s cubic-bezier(0.2, 0.8, 0.3, 1);
-        }
+        .bottle.spinning { animation: spinBottle 3s ease-out; }
 
-        @keyframes spinBottle {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(1800deg); }
-        }
+        @keyframes spinBottle { 0% { transform: rotate(0deg); } 100% { transform: rotate(1800deg); } }
 
         .challenge-card {
             background: linear-gradient(135deg, #fff5f5, #ffe0e6);
@@ -529,7 +372,6 @@
             padding: 30px;
             margin: 30px 0;
             animation: slideUp 0.6s ease;
-            box-shadow: 0 10px 30px rgba(253, 121, 168, 0.2);
         }
 
         @keyframes slideUp {
@@ -544,23 +386,15 @@
             font-weight: 700;
             margin-bottom: 15px;
             text-transform: uppercase;
-            font-size: 0.9em;
-            letter-spacing: 1px;
             color: white;
         }
 
-        .challenge-type.truth {
-            background: #0984e3;
-        }
-
-        .challenge-type.dare {
-            background: #e84393;
-        }
+        .challenge-type.truth { background: #0984e3; }
+        .challenge-type.dare { background: #e84393; }
 
         .challenge-text {
             font-size: 1.4em;
             color: var(--dark);
-            line-height: 1.4;
             font-weight: 600;
         }
 
@@ -571,40 +405,14 @@
             margin-top: 30px;
         }
 
-        .btn-truth {
-            background: linear-gradient(135deg, #74b9ff, #0984e3);
-            color: white;
-        }
-
-        .btn-dare {
-            background: linear-gradient(135deg, #fd79a8, #e84393);
-            color: white;
-        }
-
-        .btn-complete {
-            background: linear-gradient(135deg, var(--success), #00a085);
-            color: white;
-        }
-
-        .btn-skip {
-            background: linear-gradient(135deg, #b2bec3, #636e72);
-            color: white;
-        }
-
-        .opponent-waiting {
-            background: rgba(108, 92, 231, 0.1);
-            border: 2px dashed var(--primary);
-            border-radius: 20px;
-            padding: 30px;
-            margin: 20px 0;
-            color: var(--primary);
-            font-weight: 600;
-        }
+        .btn-truth { background: linear-gradient(135deg, #74b9ff, #0984e3); color: white; }
+        .btn-dare { background: linear-gradient(135deg, #fd79a8, #e84393); color: white; }
+        .btn-complete { background: linear-gradient(135deg, var(--success), #00a085); color: white; }
+        .btn-skip { background: linear-gradient(135deg, #b2bec3, #636e72); color: white; }
 
         .notification {
             position: fixed;
-            top: 80px;
-            right: 20px;
+            top: 80px; right: 20px;
             background: white;
             padding: 20px 30px;
             border-radius: 15px;
@@ -613,50 +421,11 @@
             animation: slideInRight 0.5s ease;
             z-index: 1000;
             font-weight: 600;
-            max-width: 300px;
         }
 
         @keyframes slideInRight {
             from { transform: translateX(400px); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
-        }
-
-        .game-log {
-            margin-top: 20px;
-            padding: 20px;
-            background: rgba(0,0,0,0.05);
-            border-radius: 15px;
-            max-height: 150px;
-            overflow-y: auto;
-            text-align: left;
-        }
-
-        .log-entry {
-            padding: 8px;
-            margin: 5px 0;
-            border-radius: 8px;
-            font-size: 0.9em;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .log-entry.system {
-            background: rgba(108, 92, 231, 0.1);
-            color: var(--primary);
-        }
-
-        .log-entry.action {
-            background: rgba(0, 184, 148, 0.1);
-            color: var(--success);
-        }
-
-        .log-entry.challenge {
-            background: rgba(253, 121, 168, 0.1);
-            color: var(--accent);
         }
 
         @media (max-width: 600px) {
@@ -757,7 +526,7 @@
                 <div class="bottle" id="bottle"></div>
             </div>
 
-            <div id="waitingOpponent" class="opponent-waiting hidden">
+            <div id="waitingOpponent" class="hidden" style="color: #636e72; margin: 20px 0;">
                 Esperando a que <span id="opponentNameDisplay"></span> gire la botella...
             </div>
 
@@ -776,16 +545,26 @@
             <div id="spinPrompt" style="margin-top: 20px; color: #636e72; font-size: 1.1em;">
                 Esperando inicio del juego...
             </div>
-
-            <div class="game-log" id="gameLog">
-                <div style="color: #b2bec3; text-align: center;">El historial del juego aparecerá aquí...</div>
-            </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURACIÓN - Detecta automáticamente la URL del servidor
-        const SERVER_URL = window.location.origin;
+        // ==========================================
+        // CONFIGURACIÓN FIREBASE - REEMPLAZA ESTO
+        // ==========================================
+        const firebaseConfig = {
+  apiKey: "AIzaSyBpa1YUxwh8fXPCc3edHQJkqMgtAWgHxGs",
+  authDomain: "verdad-o-reto-bcc17.firebaseapp.com",
+  databaseURL: "https://verdad-o-reto-bcc17-default-rtdb.firebaseio.com",
+  projectId: "verdad-o-reto-bcc17",
+  storageBucket: "verdad-o-reto-bcc17.firebasestorage.app",
+  messagingSenderId: "1028932215522",
+  appId: "1:1028932215522:web:acb649e987bc7517def4bb"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
         // Base de datos de preguntas y retos
         const truths = [
@@ -818,7 +597,7 @@
         ];
 
         const dares = [
-            "Quítale una prenda a tu pareja usando solo los dientes"
+            ""Quítale una prenda a tu pareja usando solo los dientes"
 "Lamer lentamente el cuello y los hombros de tu pareja por un minuto completo"
 "Toma una foto provocadora de tu pareja con tu teléfono"
 "Da un masaje en los pies de tu pareja mientras susurras lo que quieres hacerle"
@@ -843,7 +622,7 @@
 "Masajea el trasero de tu pareja con movimientos circulares"
 "Besa apasionadamente a tu pareja mientras te tocas"
 "Graba un video de ti besando y lamiendo el estómago de tu pareja"
-"Usa tus manos para excitar a tu pareja hasta que pida más"
+"Usa tus manos para excitar a tu pareja hasta que pida más""
         ];
 
         // Estado del juego
@@ -853,135 +632,26 @@
             playerName: null,
             opponentName: null,
             isHost: false,
-            socketId: null,
+            playerId: 'player-' + Math.random().toString(36).substr(2, 9),
             currentTurn: null,
             scores: {},
-            currentChallenge: null,
             gameStarted: false,
-            isMyTurn: false
+            isMyTurn: false,
+            roomRef: null
         };
 
-        let socket = null;
-
-        // Conectar al servidor
-        function connectSocket() {
+        // Conectar a Firebase
+        function initFirebase() {
             updateConnectionStatus('connecting');
             
-            socket = io(SERVER_URL, {
-                transports: ['websocket', 'polling'],
-                reconnection: true,
-                reconnectionAttempts: 5
-            });
-
-            socket.on('connect', () => {
-                console.log('Conectado al servidor');
-                updateConnectionStatus('connected');
-                gameState.socketId = socket.id;
-            });
-
-            socket.on('disconnect', () => {
-                console.log('Desconectado del servidor');
-                updateConnectionStatus('disconnected');
-                showNotification('Conexión perdida. Intentando reconectar...', 'error');
-            });
-
-            socket.on('room_created', (data) => {
-                gameState.roomCode = data.roomCode;
-                document.getElementById('displayRoomCode').textContent = data.roomCode;
-                document.getElementById('startScreen').classList.add('hidden');
-                document.getElementById('waitingRoom').classList.remove('hidden');
-                updatePlayersList([{ name: gameState.playerName, isHost: true, id: socket.id }]);
-                addLog('Sala creada. Comparte el código con un amigo.', 'system');
-            });
-
-            socket.on('player_joined', (data) => {
-                gameState.opponentName = data.playerName;
-                updatePlayersList(data.players);
-                document.getElementById('waitingText').innerHTML = '✅ ¡Jugador conectado!';
-                document.getElementById('startGameBtn').classList.remove('hidden');
-                document.getElementById('waitingMessage').textContent = '¡Listo para comenzar!';
-                addLog(`${data.playerName} se ha unido a la sala.`, 'system');
-                showNotification('¡Alguien se ha unido!', 'success');
-            });
-
-            socket.on('game_started', (data) => {
-                gameState.gameStarted = true;
-                gameState.scores = data.scores;
-                gameState.currentTurn = data.currentTurn;
-                gameState.isMyTurn = data.currentTurn === socket.id;
-                
-                document.getElementById('waitingRoom').classList.add('hidden');
-                document.getElementById('gameScreen').classList.remove('hidden');
-                
-                updateGameDisplay();
-                addLog('¡El juego ha comenzado!', 'system');
-                showNotification('¡El juego comienza!', 'success');
-            });
-
-            socket.on('bottle_spun', (data) => {
-                animateBottle(data.rotation, data.winner);
-            });
-
-            socket.on('challenge_selected', (data) => {
-                showChallenge(data.type, data.challenge, data.playerName);
-            });
-
-            socket.on('challenge_completed', (data) => {
-                gameState.scores = data.scores;
-                updateGameDisplay();
-                addLog(`${data.playerName} completó el desafío (+1 punto)`, 'action');
-                
-                if (data.playerId === socket.id) {
-                    showNotification('¡+1 punto!', 'success');
+            // Verificar conexión
+            const connectedRef = database.ref(".info/connected");
+            connectedRef.on("value", (snap) => {
+                if (snap.val() === true) {
+                    updateConnectionStatus('connected');
+                } else {
+                    updateConnectionStatus('disconnected');
                 }
-            });
-
-            socket.on('challenge_skipped', (data) => {
-                addLog(`${data.playerName} pasó el desafío`, 'action');
-            });
-
-            socket.on('turn_changed', (data) => {
-                gameState.currentTurn = data.currentTurn;
-                gameState.isMyTurn = data.currentTurn === socket.id;
-                updateGameDisplay();
-                
-                document.getElementById('challengeArea').classList.add('hidden');
-                document.getElementById('spinPrompt').classList.remove('hidden');
-                document.getElementById('spinPrompt').textContent = gameState.isMyTurn ? 
-                    '¡Es tu turno! Haz clic en la botella' : `Esperando a ${gameState.opponentName}...`;
-            });
-
-            socket.on('player_disconnected', (data) => {
-                showNotification(`${data.playerName} se ha desconectado`, 'error');
-                addLog(`${data.playerName} abandonó la sala`, 'system');
-                setTimeout(() => {
-                    if (confirm('El otro jugador se desconectó. ¿Volver al inicio?')) {
-                        location.reload();
-                    }
-                }, 1000);
-            });
-
-            socket.on('error', (data) => {
-                showNotification(data.message, 'error');
-                if (data.code === 'ROOM_NOT_FOUND') {
-                    document.getElementById('joinBtn').disabled = false;
-                    document.getElementById('joinBtn').textContent = 'Unirse a la Sala';
-                }
-            });
-
-            socket.on('joined_room', (data) => {
-                gameState.roomCode = data.roomCode;
-                gameState.opponentName = data.players.find(p => p.id !== socket.id)?.name;
-                document.getElementById('startScreen').classList.add('hidden');
-                document.getElementById('waitingRoom').classList.remove('hidden');
-                document.getElementById('displayRoomCode').textContent = data.roomCode;
-                updatePlayersList(data.players);
-                document.getElementById('waitingText').innerHTML = `
-                    <div class="spinner"></div>
-                    <span>Esperando a que el anfitrión inicie...</span>
-                `;
-                document.getElementById('startGameBtn').classList.add('hidden');
-                addLog(`Te uniste a la sala de ${gameState.opponentName}`, 'system');
             });
         }
 
@@ -992,284 +662,5 @@
             if (status === 'connected') {
                 el.classList.add('status-connected');
                 el.innerHTML = '🟢 Conectado';
-            } else if (status === 'disconnected') {
-                el.classList.add('status-disconnected');
-                el.innerHTML = '🔴 Desconectado';
-            } else {
-                el.classList.add('status-connecting');
-                el.innerHTML = '<span class="spinner" style="width: 12px; height: 12px; border-width: 2px;"></span> Conectando...';
-            }
-        }
-
-        function selectMode(mode) {
-            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            
-            gameState.mode = mode;
-            
-            if (mode === 'create') {
-                document.getElementById('createSection').classList.remove('hidden');
-                document.getElementById('joinSection').classList.add('hidden');
-            } else {
-                document.getElementById('createSection').classList.add('hidden');
-                document.getElementById('joinSection').classList.remove('hidden');
-            }
-        }
-
-        function createRoom() {
-            const name = document.getElementById('hostName').value.trim();
-            if (!name) {
-                showNotification('Por favor introduce tu nombre', 'error');
-                return;
             }
 
-            if (!socket || !socket.connected) {
-                showNotification('Esperando conexión con el servidor...', 'warning');
-                return;
-            }
-
-            gameState.playerName = name;
-            gameState.isHost = true;
-            
-            document.getElementById('createBtn').disabled = true;
-            document.getElementById('createBtn').textContent = 'Creando...';
-            
-            socket.emit('create_room', { playerName: name });
-        }
-
-        function joinRoom() {
-            const name = document.getElementById('guestName').value.trim();
-            const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
-            
-            if (!name || !code) {
-                showNotification('Completa todos los campos', 'error');
-                return;
-            }
-
-            if (!socket || !socket.connected) {
-                showNotification('Esperando conexión con el servidor...', 'warning');
-                return;
-            }
-
-            gameState.playerName = name;
-            gameState.isHost = false;
-            
-            document.getElementById('joinBtn').disabled = true;
-            document.getElementById('joinBtn').textContent = 'Uniéndose...';
-            
-            socket.emit('join_room', { roomCode: code, playerName: name });
-        }
-
-        function updatePlayersList(players) {
-            const list = document.getElementById('playersList');
-            list.innerHTML = '';
-            
-            players.forEach(player => {
-                const playerDiv = document.createElement('div');
-                playerDiv.className = 'player-item';
-                const isMe = player.id === socket.id;
-                const label = isMe ? ' (Tú)' : '';
-                const gradient = player.isHost ? 
-                    'linear-gradient(135deg, var(--primary), var(--accent))' : 
-                    'linear-gradient(135deg, #fd79a8, #e84393)';
-                
-                playerDiv.innerHTML = `
-                    <div class="player-avatar" style="background: ${gradient};">
-                        ${player.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div class="player-name">${player.name}${label} ${isMe ? '<span class="status"></span>' : ''}</div>
-                `;
-                list.appendChild(playerDiv);
-            });
-        }
-
-        function copyCode() {
-            const code = document.getElementById('displayRoomCode').textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                showNotification('¡Código copiado!', 'success');
-            });
-        }
-
-        function leaveRoom() {
-            if (confirm('¿Seguro que quieres salir?')) {
-                if (socket) socket.disconnect();
-                location.reload();
-            }
-        }
-
-        function startGame() {
-            socket.emit('start_game', { roomCode: gameState.roomCode });
-        }
-
-        function updateGameDisplay() {
-            const players = [
-                { id: socket.id, name: gameState.playerName },
-                { id: 'opponent', name: gameState.opponentName }
-            ];
-            
-            const myScore = gameState.scores[socket.id] || 0;
-            const opponentScore = gameState.scores[Object.keys(gameState.scores).find(id => id !== socket.id)] || 0;
-            
-            document.getElementById('score1Value').textContent = myScore;
-            document.getElementById('score2Value').textContent = opponentScore;
-            
-            const isMyTurn = gameState.currentTurn === socket.id;
-            const turnName = isMyTurn ? gameState.playerName : gameState.opponentName;
-            
-            const turnIndicator = document.getElementById('turnIndicator');
-            turnIndicator.textContent = `Turno de: ${turnName}`;
-            turnIndicator.classList.toggle('my-turn', isMyTurn);
-            
-            document.getElementById('score1').classList.toggle('active', isMyTurn);
-            document.getElementById('score2').classList.toggle('active', !isMyTurn);
-            
-            const bottle = document.getElementById('bottle');
-            const spinPrompt = document.getElementById('spinPrompt');
-            const waitingOpponent = document.getElementById('waitingOpponent');
-            
-            if (isMyTurn && !gameState.currentChallenge) {
-                bottle.style.pointerEvents = 'auto';
-                bottle.style.opacity = '1';
-                spinPrompt.textContent = '¡Tu turno! Haz clic en la botella';
-                spinPrompt.classList.remove('hidden');
-                waitingOpponent.classList.add('hidden');
-            } else if (!isMyTurn && !gameState.currentChallenge) {
-                bottle.style.pointerEvents = 'none';
-                bottle.style.opacity = '0.6';
-                spinPrompt.classList.add('hidden');
-                waitingOpponent.classList.remove('hidden');
-                document.getElementById('opponentNameDisplay').textContent = gameState.opponentName;
-            }
-        }
-
-        function spinBottle() {
-            if (!gameState.isMyTurn || gameState.currentChallenge) return;
-            
-            const bottle = document.getElementById('bottle');
-            bottle.style.pointerEvents = 'none';
-            bottle.classList.add('spinning');
-            
-            socket.emit('spin_bottle', { roomCode: gameState.roomCode });
-        }
-
-        function animateBottle(rotation, winnerId) {
-            const bottle = document.getElementById('bottle');
-            bottle.style.transform = `rotate(${rotation}deg)`;
-            
-            setTimeout(() => {
-                bottle.classList.remove('spinning');
-                gameState.isMyTurn = winnerId === socket.id;
-                gameState.currentTurn = winnerId;
-                updateGameDisplay();
-                
-                if (gameState.isMyTurn) {
-                    showNotification('¡Te tocó a ti!', 'success');
-                    addLog('La botella te señaló a ti', 'challenge');
-                } else {
-                    addLog(`La botella señaló a ${gameState.opponentName}`, 'challenge');
-                }
-            }, 3000);
-        }
-
-        function showChallenge(type, challengeText, playerName) {
-            gameState.currentChallenge = { type, text: challengeText };
-            
-            document.getElementById('challengeType').textContent = type === 'truth' ? 'VERDAD' : 'RETO';
-            document.getElementById('challengeType').className = `challenge-type ${type}`;
-            document.getElementById('challengeText').textContent = challengeText;
-            
-            document.getElementById('challengeArea').classList.remove('hidden');
-            document.getElementById('spinPrompt').classList.add('hidden');
-            document.getElementById('waitingOpponent').classList.add('hidden');
-            
-            const isMyChallenge = playerName === gameState.playerName;
-            
-            if (isMyChallenge) {
-                document.getElementById('actionButtons').innerHTML = `
-                    <button class="btn btn-complete" onclick="completeChallenge()">✅ Completado</button>
-                    <button class="btn btn-skip" onclick="skipChallenge()">❌ Pasar</button>
-                `;
-                addLog(`Te tocó: ${type === 'truth' ? 'Verdad' : 'Reto'}`, 'challenge');
-            } else {
-                document.getElementById('actionButtons').innerHTML = `
-                    <div style="padding: 20px; color: #636e72; font-weight: 600;">
-                        Esperando a que ${playerName} responda...
-                    </div>
-                `;
-                addLog(`${playerName} debe responder: ${type === 'truth' ? 'Verdad' : 'Reto'}`, 'challenge');
-            }
-        }
-
-        function selectChallenge(type) {
-            const list = type === 'truth' ? truths : dares;
-            const challenge = list[Math.floor(Math.random() * list.length)];
-            
-            socket.emit('select_challenge', {
-                roomCode: gameState.roomCode,
-                type: type,
-                challenge: challenge
-            });
-        }
-
-        function completeChallenge() {
-            socket.emit('complete_challenge', { roomCode: gameState.roomCode });
-            gameState.currentChallenge = null;
-        }
-
-        function skipChallenge() {
-            socket.emit('skip_challenge', { roomCode: gameState.roomCode });
-            gameState.currentChallenge = null;
-        }
-
-        function addLog(message, type) {
-            const log = document.getElementById('gameLog');
-            if (log.children.length === 1 && log.children[0].textContent.includes('historial')) {
-                log.innerHTML = '';
-            }
-            
-            const entry = document.createElement('div');
-            entry.className = `log-entry ${type}`;
-            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            log.appendChild(entry);
-            log.scrollTop = log.scrollHeight;
-        }
-
-        function showNotification(message, type) {
-            const existing = document.querySelector('.notification');
-            if (existing) existing.remove();
-            
-            const notif = document.createElement('div');
-            notif.className = 'notification';
-            notif.textContent = message;
-            notif.style.borderLeftColor = type === 'error' ? '#e74c3c' : type === 'warning' ? '#f39c12' : '#00b894';
-            document.body.appendChild(notif);
-            
-            setTimeout(() => {
-                notif.remove();
-            }, 3000);
-        }
-
-        // Inicializar
-        document.addEventListener('DOMContentLoaded', () => {
-            connectSocket();
-            
-            // Configurar event listeners para inputs
-            document.querySelectorAll('input').forEach(input => {
-                input.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        if (input.id === 'hostName') createRoom();
-                        if (input.id === 'guestName' || input.id === 'roomCodeInput') {
-                            if (document.getElementById('guestName').value && document.getElementById('roomCodeInput').value) {
-                                joinRoom();
-                            }
-                        }
-                    }
-                });
-            });
-
-            // Configurar botella
-            document.getElementById('bottle').addEventListener('click', spinBottle);
-        });
-    </script>
-</body>
-</html>
